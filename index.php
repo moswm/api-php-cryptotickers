@@ -28,6 +28,7 @@ error_reporting(E_ERROR | E_WARNING | E_PARSE | E_NOTICE);
 	if ($_GET['cmd']!='tickers') exit();
 
 	header('Access-Control-Allow-Origin: *');
+	if ($_GET['type']=="json") header("Content-Type: application/json; charset=UTF-8");
 
 	$_gnrl_marketlist=array('btx','plx','cex');
 
@@ -42,10 +43,8 @@ error_reporting(E_ERROR | E_WARNING | E_PARSE | E_NOTICE);
 	$run3=file_get_contents($srvurl.'_tickers/cex/cex_run.php');
 	//===== end auto-execution =====
 
-	if ($_GET['type']=="stm") {
-		include('_tickers/_tickers_gnrl_functions.php');
-		echo _tickers_combtickerslist();
-	} elseIf ($_GET['type']=="json") {
-	}
+	include('_tickers/_tickers_gnrl_functions.php');
+	list($stm,$json)=_tickers_combtickerslist();
+	echo (($_GET['type']=="stm")?$stm:(($_GET['type']=="json")?$json:""));
 
 ?>

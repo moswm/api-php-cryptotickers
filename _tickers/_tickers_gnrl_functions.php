@@ -17,23 +17,47 @@
 
 function _tickers_combtickerslist() {
 global $_gnrl_marketlist;
-	$alt='';
-	foreach ($_gnrl_marketlist as $mktname) {
-		$alt.=_tickers_getstmtickerslist($mktname);
+	$stm='';
+	$json='{';
+	foreach ($_gnrl_marketlist as $mktn) {
+		$pgr=file('_tickers/'.$mktn.'/'.$mktn.'_tickers');
+		$stm.=_tickers_get_STM($mktn,$pgr);
+		$json.=(strlen($json)<6?'':', ')._tickers_get_JSON($mktn,$pgr);
 	}
-	return $alt;
+	$json.='}';
+	return [$stm,$json];
 }
 
-function _tickers_getstmtickerslist($stm) {
-	$tl=$stm.'#';
-	$pagerec=file('_tickers/'.$stm.'/'.$stm.'_tickers');
-	foreach ($pagerec as $rec) {
-		$tmp=explode(chr(9), $rec);
-		if ($tmp[0]!='') {
-			$tl.=str_replace('	','!',$rec).'|';
-		}
+function _tickers_get_STM($mktn,$pgr) {
+	$tl=$mktn.'#';
+	foreach ($pgr as $rec) {
+		$tmp=explode(chr(9), trim($rec));
+		$tl.=!$tmp[0]?:str_replace('	','!',$rec).'|';
 	}
 	$tl.='#';
+	return $tl;
+}
+
+function _tickers_get_JSON($mktn,$pgr) {
+	$tl='"'.$mktn.'": {';
+	$i=0;
+	foreach ($pgr as $rec) {
+		$tmp=explode(chr(9), trim($rec));
+		if ($tmp[0]) {
+			$i++;
+			$tl.=($i==1?'':', ').'"'.$tmp[0].'": {';
+			$tl.='"status": "'.$tmp[1].'", ';
+			$tl.='"last": "'.$tmp[2].'", ';
+			$tl.='"sell": "'.$tmp[3].'", ';
+			$tl.='"buy": "'.$tmp[4].'", ';
+			$tl.='"low": "'.$tmp[5].'", ';
+			$tl.='"high": "'.$tmp[6].'", ';
+			$tl.='"volsum": "'.$tmp[7].'", ';
+			$tl.='"vol": "'.$tmp[8].'"';
+			$tl.='}';
+		}
+	}
+	$tl.='}';
 	return $tl;
 }
 
